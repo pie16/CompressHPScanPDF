@@ -1,10 +1,17 @@
+import org.apache.pdfbox.cos.COSDocument;
+import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.io.MemoryUsageSetting;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import org.apache.pdfbox.pdmodel.graphics.image.CCITTFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.graphics.pattern.PDAbstractPattern;
+import org.apache.pdfbox.pdmodel.graphics.shading.PDShading;
+import org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
@@ -39,10 +46,9 @@ public class CompressPDF {
 
         try (FileInputStream fileInputStream = new FileInputStream(inputFile);
              //Loading an existing document
-             PDDocument inputDocument = PDDocument.load(fileInputStream, MemoryUsageSetting.setupMixed(10));
+             PDDocument inputDocument = PDDocument.load(fileInputStream);
              PDDocument outputDocument = new PDDocument())
         {
-
             PDFRenderer renderer = new PDFRenderer(inputDocument);
 
             for (int pageNumber = 0; pageNumber < inputDocument.getNumberOfPages(); pageNumber++) {
@@ -70,10 +76,11 @@ public class CompressPDF {
 
         } catch (FileNotFoundException e) {
             System.out.println("Ошибка чтения/записи файла");
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e){
+            System.err.println("Exception while trying to create pdf document - " + e);
         }
         System.out.println(System.currentTimeMillis() - time);
+        System.out.println("Used Memory: " +  (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
     }
 
     private static BufferedImage ExtractingBinaryImage(PDFRenderer renderer, int pageNumber) throws IOException {
